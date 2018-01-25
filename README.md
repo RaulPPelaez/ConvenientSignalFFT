@@ -4,9 +4,11 @@ Takes a single column signal and outputs its FFT (using cuda) in frequency domai
 
 Needs CUDA>7.5 to work, check src/Makefile, if you have boost you can say so there and gain some speed.  
 
+**Currently only GPU implementation is provided**  
+
 ## Usage:
 
-fft [N] [Fs] -prec [double/float] < signal  
+fft -N [N] -Fs [Fs] -prec [double/float] < signal  
 
 N: Number of points in the signal  
 Fs: Sampling frequency  
@@ -15,7 +17,7 @@ prec: Precision mode, float by default
 ### Example:
 
 ```bash
-seq 0 0.2 10000 |  awk '{print sin($1)}' | fft 10000 5.0 > kk
+seq 0 0.2 10000 |  awk '{print sin($1)}' | fft -N 10000 -Fs 5.0 > kk
 
 w=$(grep $( datamash -W max 2 <kk) kk | awk '{print 2*3.1415*$1}')
 
