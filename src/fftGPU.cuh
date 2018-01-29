@@ -79,31 +79,26 @@ void FFTCudaMode( int numberElements, double Fs){
   cufftPlan1d(&plan, numberElements, CUFFT_Real2Complex<floatType>::value, 1);
   cufftExecReal2Complex<floatType>(plan, (cufftReal_t*) d_m, d_m);
 
-
-  cudaDeviceSynchronize();
-
   //Download
   h_data = data;
 
 
-  thrust::device_vector<floatType> devAmplitudes(numberElements/2+1);
-  
-  //Print
-  thrust::transform(data.begin(),
-		    data.begin()+numberElements/2+1,
-		    devAmplitudes.begin(),
-		    [=] __device__ (cufftComplex_t a){ return 2.0*sqrt(a.x*a.x+a.y*a.y)/(floatType)numberElements;}
-		    );
+  cufftComplex_t greaterAmplitudeMode = *thrust::max_element(data.begin(),
+							 data.end(),
+							 [] __device__ (cufftComplex_t a, cufftComplex_t b){
+							   return a.x*a.x+a.y*a.y<b.x*b.x+b.y*b.y;
+							 }
+							     );
+  floatType maxAmplitude = 2.0*sqrt(greaterAmplitudeMode.x*greaterAmplitudeMode.x +
+				    greaterAmplitudeMode.y*greaterAmplitudeMode.y)/(double)numberElements;
 
-  floatType maxAmplitude = *thrust::max_element(devAmplitudes.begin(),
-					     devAmplitudes.end());
-  
-  thrust::device_vector<floatType> hostAmplitudes = devAmplitudes;
+
 
   
   for(int i = 0; i<numberElements/2+1; i++){
-
-    floatType Aw = hostAmplitudes[i];    
+    auto tmp = h_data[i];
+    double prefactor = 2.0/(double)numberElements;
+    floatType Aw = prefactor*sqrt(tmp.x*tmp.x+tmp.y*tmp.y);    
     floatType phase = 0.0;
     if(Aw >= maxAmplitude/1000.0)
       phase = std::atan2(h_data[i].y, h_data[i].x);
@@ -113,6 +108,6 @@ void FFTCudaMode( int numberElements, double Fs){
   }
   std::cout<<std::flush;
 
-  cudaDeviceSynchronize();
+
 
 }
