@@ -1,0 +1,9 @@
+#ifndef CONVENIENTFFTDEFINES_H
+#define CONVENIENTFFTDEFINES_H
+#define ConvenientSignalFFT_VERSION_MAJOR @ConvenientSignalFFT_VERSION_MAJOR@
+#define ConvenientSignalFFT_VERSION_MINOR @ConvenientSignalFFT_VERSION_MINOR@
+#cmakedefine USE_BOOST
+#cmakedefine USE_CUDA
+#cmakedefine USE_CPU
+#cmakedefine USE_MKL
+#endif
